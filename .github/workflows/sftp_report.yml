@@ -41,9 +41,15 @@ jobs:
           echo "$GMAIL_OAUTH_JSON" > credentials/gmail_oauth.json
           echo "$TOKEN_JSON"       > credentials/token.json
 
-      # ── 4. Run the report ────────────────────────────────────────────────────
+      # ── 4. Write .env (secrets substituted directly by GitHub Actions) ──────
+      - name: Write .env file
+        run: |
+          printf 'REPORT_TO_EMAILS=%s\nGOOGLE_CHAT_WEBHOOK_URL=%s\n' \
+            '${{ secrets.REPORT_TO_EMAILS }}' \
+            '${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}' > .env
+          echo "--- .env written, line count: $(wc -l < .env) ---"
+          grep -c 'REPORT_TO_EMAILS' .env && echo "REPORT_TO_EMAILS line found" || echo "REPORT_TO_EMAILS MISSING!"
+
+      # ── 5. Run the report ────────────────────────────────────────────────────
       - name: Run SFTP report
-        env:
-          REPORT_TO_EMAILS: ${{ secrets.REPORT_TO_EMAILS }}
-          GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
         run: python sftp_report.py
