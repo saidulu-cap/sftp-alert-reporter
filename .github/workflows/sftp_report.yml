@@ -1,0 +1,54 @@
+name: SFTP Alert Reporter
+
+on:
+  schedule:
+    # 1:00 PM IST = 07:30 UTC  (IST is UTC+5:30)
+    - cron: '30 7 * * *'
+  workflow_dispatch:            # also allows manual trigger from GitHub UI
+
+jobs:
+  run-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Get the code ──────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Python ────────────────────────────────────────────────────────────
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ── 3. Write secrets to disk (never committed to the repo) ───────────────
+      - name: Write OAuth credentials
+        env:
+          GMAIL_OAUTH_JSON: ${{ secrets.GMAIL_OAUTH_JSON }}
+          TOKEN_JSON: ${{ secrets.TOKEN_JSON }}
+        run: |
+          mkdir -p credentials
+          echo "$GMAIL_OAUTH_JSON" > credentials/gmail_oauth.json
+          echo "$TOKEN_JSON"       > credentials/token.json
+
+      - name: Write .env file
+        env:
+          REPORT_TO_EMAILS: ${{ secrets.REPORT_TO_EMAILS }}
+          GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+        run: |
+          echo "REPORT_TO_EMAILS=$REPORT_TO_EMAILS"               > .env
+          echo "GOOGLE_CHAT_WEBHOOK_URL=$GOOGLE_CHAT_WEBHOOK_URL" >> .env
+
+      # ── 4. Run the report ────────────────────────────────────────────────────
+      - name: Run SFTP report
+        run: python sftp_report.py
