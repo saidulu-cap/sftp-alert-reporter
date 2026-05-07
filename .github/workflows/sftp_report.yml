@@ -31,15 +31,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # ── 3. Write OAuth credentials from secrets ──────────────────────────────
+      # ── 3. Write OAuth credentials from base64-encoded secrets ──────────────
       - name: Write OAuth credentials
         env:
-          GMAIL_OAUTH_JSON: ${{ secrets.GMAIL_OAUTH_JSON }}
-          TOKEN_JSON: ${{ secrets.TOKEN_JSON }}
+          GMAIL_OAUTH_JSON_B64: ${{ secrets.GMAIL_OAUTH_JSON_B64 }}
+          TOKEN_JSON_B64: ${{ secrets.TOKEN_JSON_B64 }}
         run: |
           mkdir -p credentials
-          echo "$GMAIL_OAUTH_JSON" > credentials/gmail_oauth.json
-          echo "$TOKEN_JSON"       > credentials/token.json
+          echo "$GMAIL_OAUTH_JSON_B64" | base64 -d > credentials/gmail_oauth.json
+          echo "$TOKEN_JSON_B64"       | base64 -d > credentials/token.json
+          echo "gmail_oauth.json size: $(wc -c < credentials/gmail_oauth.json) bytes"
+          echo "token.json size:       $(wc -c < credentials/token.json) bytes"
 
       # ── 4. Run the report ────────────────────────────────────────────────────
       - name: Run SFTP report
