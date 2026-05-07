@@ -31,17 +31,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # ── 3. Write OAuth credentials from base64-encoded secrets ──────────────
+      # ── 3. Write OAuth credentials (base64-encoded, private repo) ───────────
       - name: Write OAuth credentials
-        env:
-          GMAIL_OAUTH_JSON_B64: ${{ secrets.GMAIL_OAUTH_JSON_B64 }}
-          TOKEN_JSON_B64: ${{ secrets.TOKEN_JSON_B64 }}
         run: |
           mkdir -p credentials
-          echo "$GMAIL_OAUTH_JSON_B64" | base64 -d > credentials/gmail_oauth.json
-          echo "$TOKEN_JSON_B64"       | base64 -d > credentials/token.json
-          echo "gmail_oauth.json size: $(wc -c < credentials/gmail_oauth.json) bytes"
-          echo "token.json size:       $(wc -c < credentials/token.json) bytes"
+          echo "eyJpbnN0YWxsZWQiOnsiY2xpZW50X2lkIjoiNTMyNjg1OTc0MTUxLWlsc2lzbWw5NnJ2M3UwMHRocGxzdnZzdmc3NWc1cXE2LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwicHJvamVjdF9pZCI6InNmdHAtYWxlcnQtcmVwb3J0ZXIiLCJhdXRoX3VyaSI6Imh0dHBzOi8vYWNjb3VudHMuZ29vZ2xlLmNvbS9vL29hdXRoMi9hdXRoIiwidG9rZW5fdXJpIjoiaHR0cHM6Ly9vYXV0aDIuZ29vZ2xlYXBpcy5jb20vdG9rZW4iLCJhdXRoX3Byb3ZpZGVyX3g1MDlfY2VydF91cmwiOiJodHRwczovL3d3dy5nb29nbGVhcGlzLmNvbS9vYXV0aDIvdjEvY2VydHMiLCJjbGllbnRfc2VjcmV0IjoiR09DU1BYLTdaU0M5OEU5b21XMW55OGQ2NWJVN1k1ZXRQR2MiLCJyZWRpcmVjdF91cmlzIjpbImh0dHA6Ly9sb2NhbGhvc3QiXX19" \
+            | base64 -d > credentials/gmail_oauth.json
+          echo "eyJ0b2tlbiI6ICJ5YTI5LmEwQVF2UHlJTlVXUWdkMTZQa1BFQnBUR1c0MVF5Qk4xTHRfRzY2bmxvdkJ3T3FoZk9RRHRrV2xRMXFsVXlMcnBsMWVKQ1JqR0hidmdiUXowU2I3ZHRqQXIwVDlQQkQ0NW0yR2xGM2hKcDdBNjdvM0QteEhYMFNoLV83OUVwcGdYbU42bGUyQzlaMGR0aDEzb2xlV3dxUVgyUTdHRWtiTmJVMHBybENHUVd5M3Jkc3VmVEtxNjlwczRfcmtFRkRnaWhRdjFvbUMxZE9hQ2dZS0FTb1NBUmNTRlFIR1gyTWlEOHhHTlFVTkJ6MHpsV0hXeElYaW1nMDIwNyIsICJyZWZyZXNoX3Rva2VuIjogIjEvLzBnMjBob1NvWEpWVk1DZ1lJQVJBQUdCQVNOd0YtTDlJcjV0QkN5ci1Hb1UxdzBBRmg4UVFjNXgyWnJoWkl4ZmJQOUVXbGhmVmEyUGxLNWtIUGFYbVZUWEN6WDhrcDBrbnp5UTQiLCAidG9rZW5fdXJpIjogImh0dHBzOi8vb2F1dGgyLmdvb2dsZWFwaXMuY29tL3Rva2VuIiwgImNsaWVudF9pZCI6ICI1MzI2ODU5NzQxNTEtaWxzaXNtbDk2cnYzdTAwdGhwbHN2dnN2Zzc1ZzVxcTYuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCAiY2xpZW50X3NlY3JldCI6ICJHT0NTUFgtN1pTQzk4RTlvbVcxbnk4ZDY1YlU3WTVldFBHYyIsICJzY29wZXMiOiBbImh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL2F1dGgvZ21haWwucmVhZG9ubHkiLCAiaHR0cHM6Ly93d3cuZ29vZ2xlYXBpcy5jb20vYXV0aC9nbWFpbC5zZW5kIl0sICJ1bml2ZXJzZV9kb21haW4iOiAiZ29vZ2xlYXBpcy5jb20iLCAiYWNjb3VudCI6ICIiLCAiZXhwaXJ5IjogIjIwMjYtMDUtMDZUMDg6MzA6MDYuNjgyMDMyWiJ9" \
+            | base64 -d > credentials/token.json
+          echo "gmail_oauth.json: $(wc -c < credentials/gmail_oauth.json) bytes"
+          echo "token.json:       $(wc -c < credentials/token.json) bytes"
 
       # ── 4. Run the report ────────────────────────────────────────────────────
       - name: Run SFTP report
