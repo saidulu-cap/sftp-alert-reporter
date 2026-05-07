@@ -41,14 +41,9 @@ jobs:
           echo "$GMAIL_OAUTH_JSON" > credentials/gmail_oauth.json
           echo "$TOKEN_JSON"       > credentials/token.json
 
-      - name: Write .env file
+      # ── 4. Run the report ────────────────────────────────────────────────────
+      - name: Run SFTP report
         env:
           REPORT_TO_EMAILS: ${{ secrets.REPORT_TO_EMAILS }}
           GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
-        run: |
-          echo "REPORT_TO_EMAILS=$REPORT_TO_EMAILS"               > .env
-          echo "GOOGLE_CHAT_WEBHOOK_URL=$GOOGLE_CHAT_WEBHOOK_URL" >> .env
-
-      # ── 4. Run the report ────────────────────────────────────────────────────
-      - name: Run SFTP report
         run: python sftp_report.py
