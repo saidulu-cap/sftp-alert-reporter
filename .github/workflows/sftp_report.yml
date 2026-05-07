@@ -31,7 +31,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # ── 3. Write secrets to disk (never committed to the repo) ───────────────
+      # ── 3. Write OAuth credentials from secrets ──────────────────────────────
       - name: Write OAuth credentials
         env:
           GMAIL_OAUTH_JSON: ${{ secrets.GMAIL_OAUTH_JSON }}
@@ -41,15 +41,9 @@ jobs:
           echo "$GMAIL_OAUTH_JSON" > credentials/gmail_oauth.json
           echo "$TOKEN_JSON"       > credentials/token.json
 
-      # ── 4. Write .env (secrets substituted directly by GitHub Actions) ──────
-      - name: Write .env file
-        run: |
-          printf 'REPORT_TO_EMAILS=%s\nGOOGLE_CHAT_WEBHOOK_URL=%s\n' \
-            '${{ secrets.REPORT_TO_EMAILS }}' \
-            '${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}' > .env
-          echo "--- .env written, line count: $(wc -l < .env) ---"
-          grep -c 'REPORT_TO_EMAILS' .env && echo "REPORT_TO_EMAILS line found" || echo "REPORT_TO_EMAILS MISSING!"
-
-      # ── 5. Run the report ────────────────────────────────────────────────────
+      # ── 4. Run the report ────────────────────────────────────────────────────
       - name: Run SFTP report
+        env:
+          REPORT_TO_EMAILS: "saidulu.gadari@capillarytech.com,shreya.revannavar@capillarytech.com"
+          GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
         run: python sftp_report.py
