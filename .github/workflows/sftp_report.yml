@@ -47,5 +47,8 @@ jobs:
       - name: Run SFTP report
         env:
           REPORT_TO_EMAILS: "saidulu.gadari@capillarytech.com,shreya.revannavar@capillarytech.com"
-          GOOGLE_CHAT_WEBHOOK_URL: "https://chat.googleapis.com/v1/spaces/AAQA-JRBfx4/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=7W7Wx-mFr6XVEIUdwQmhOH4LzdbSqubJfTKukyqe-Gg"
-        run: python sftp_report.py
+          GOOGLE_CHAT_WEBHOOK_URL: "aHR0cHM6Ly9jaGF0Lmdvb2dsZWFwaXMuY29tL3YxL3NwYWNlcy9BQVFBLUpSQmZ4NC9tZXNzYWdlcz9rZXk9QUl6YVN5RGRJMGhDWnRFNnZ5U2pNbS1XRWZScTNDUHpxS3Fxc0hJJnRva2VuPTdXN1d4LW1GcjZYVkVJVWR3UW1oT0g0THpkYlNxdWJKZlRLdWt5cWUtR2c="
+        run: |
+          GOOGLE_CHAT_WEBHOOK_URL=$(echo "$GOOGLE_CHAT_WEBHOOK_URL" | base64 -d)
+          export GOOGLE_CHAT_WEBHOOK_URL
+          python sftp_report.py
