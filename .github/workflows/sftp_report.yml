@@ -2,8 +2,9 @@ name: SFTP Alert Reporter
 
 on:
   schedule:
-    # 1:00 PM IST = 07:30 UTC  (IST is UTC+5:30)
-    - cron: '30 7 * * *'
+    # Target 1:00 PM IST. GitHub cron can be 15-30 min late, so we schedule
+    # at 07:00 UTC (12:30 PM IST) to reliably land around 1:00 PM IST.
+    - cron: '0 7 * * *'
   workflow_dispatch:            # also allows manual trigger from GitHub UI
 
 jobs:
@@ -46,5 +47,5 @@ jobs:
       - name: Run SFTP report
         env:
           REPORT_TO_EMAILS: "saidulu.gadari@capillarytech.com,shreya.revannavar@capillarytech.com"
-          GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
+          GOOGLE_CHAT_WEBHOOK_URL: "https://chat.googleapis.com/v1/spaces/AAQA-JRBfx4/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=7W7Wx-mFr6XVEIUdwQmhOH4LzdbSqubJfTKukyqe-Gg"
         run: python sftp_report.py
