@@ -66,6 +66,16 @@ JOBS: list[JobDef] = [
 # Gmail authentication
 # ---------------------------------------------------------------------------
 
+def already_ran_today(service) -> bool:
+    """Return True if a report email was already sent today (checks Sent folder)."""
+    now_ist  = datetime.now(IST)
+    day_start = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)
+    after_ts  = int(day_start.timestamp())
+    query  = f'subject:"SFTP Transfer Job Report" in:sent after:{after_ts}'
+    result = service.users().messages().list(userId="me", q=query).execute()
+    return bool(result.get("messages", []))
+
+
 def get_gmail_service():
     creds = None
     if TOKEN_FILE.exists():
@@ -505,6 +515,11 @@ def main():
     profile      = service.users().getProfile(userId="me").execute()
     logged_in_as = profile.get("emailAddress", "unknown")
     print(f"Logged in as: {logged_in_as}\n")
+
+    if already_ran_today(service):
+        print(f"[{datetime.now(IST).strftime('%Y-%m-%d %H:%M IST')}] "
+              f"Report already sent today — skipping to avoid duplicate.")
+        return
 
     results: list[JobResult] = []
     for job in JOBS:
