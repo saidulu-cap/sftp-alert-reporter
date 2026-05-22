@@ -516,8 +516,14 @@ def main():
     logged_in_as = profile.get("emailAddress", "unknown")
     print(f"Logged in as: {logged_in_as}\n")
 
+    now_ist = datetime.now(IST)
+    if now_ist.hour < 13:
+        print(f"[{now_ist.strftime('%Y-%m-%d %H:%M IST')}] "
+              f"Too early (before 1:00 PM IST) — emails not yet received. Skipping.")
+        return
+
     if already_ran_today(service):
-        print(f"[{datetime.now(IST).strftime('%Y-%m-%d %H:%M IST')}] "
+        print(f"[{now_ist.strftime('%Y-%m-%d %H:%M IST')}] "
               f"Report already sent today — skipping to avoid duplicate.")
         return
 
