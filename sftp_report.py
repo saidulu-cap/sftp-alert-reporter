@@ -560,6 +560,19 @@ def main():
     else:
         print("GOOGLE_CHAT_WEBHOOK_URL not set — skipping Chat post.")
 
+    # Disable the Windows scheduled task so it stops repeating today.
+    # A separate "re-enable" task fires at 12:55 PM tomorrow to arm it again.
+    import subprocess, sys
+    if sys.platform == "win32":
+        r = subprocess.run(
+            ["schtasks", "/change", "/tn", "SFTP Alert Reporter", "/DISABLE"],
+            capture_output=True, text=True
+        )
+        if r.returncode == 0:
+            print("Windows task disabled until tomorrow (re-enabled at 12:55 PM).")
+        else:
+            print(f"Note: could not disable task: {r.stderr.strip()}")
+
     print("\nDone.")
 
 
