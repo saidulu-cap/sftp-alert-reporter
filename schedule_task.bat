@@ -1,30 +1,21 @@
 @echo off
 REM Run this script ONCE to register the SFTP Alert Reporter task.
-REM Two triggers:
-REM   1. Daily at 1:00 PM IST  (runs on time when laptop is already on)
-REM   2. At every Logon        (catches up if laptop was off at 1pm)
-REM The script itself skips if:
-REM   - It's before 1:00 PM IST (emails not yet received)
-REM   - Report was already sent today (prevents duplicates vs GitHub Actions)
+REM Trigger: daily at 1pm, repeats every 10 min until 11pm, StartWhenAvailable.
+REM The script skips instantly if before 1pm IST or already sent today.
 
-SET PYTHON_EXE=C:\Users\gadari.saidulu\AppData\Local\Programs\PythonEmbed312\python.exe
-SET SCRIPT=C:\Users\gadari.saidulu\Projects\sftp-alert-reporter\sftp_report.py
-SET WORKDIR=C:\Users\gadari.saidulu\Projects\sftp-alert-reporter
+SET XMLFILE=%TEMP%\sftp_task.xml
 
 powershell -NoProfile -Command " ^
-  $action   = New-ScheduledTaskAction -Execute '%PYTHON_EXE%' -Argument '%SCRIPT%' -WorkingDirectory '%WORKDIR%'; ^
-  $t1       = New-ScheduledTaskTrigger -Daily -At '13:00'; ^
-  $t2       = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME; ^
-  $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 30) -MultipleInstances IgnoreNew; ^
+  $xml = @'<?xml version=""1.0"" encoding=""UTF-16""?><Task version=""1.2"" xmlns=""http://schemas.microsoft.com/windows/2004/02/mit/task""><RegistrationInfo><Description>SFTP Alert Reporter</Description></RegistrationInfo><Triggers><CalendarTrigger><Repetition><Interval>PT10M</Interval><Duration>PT10H</Duration><StopAtDurationEnd>false</StopAtDurationEnd></Repetition><StartBoundary>2026-05-25T13:00:00</StartBoundary><Enabled>true</Enabled><ScheduleByDay><DaysInterval>1</DaysInterval></ScheduleByDay></CalendarTrigger></Triggers><Principals><Principal id=""Author""><UserId>CLPT1731\gadari.saidulu</UserId><LogonType>InteractiveToken</LogonType><RunLevel>LeastPrivilege</RunLevel></Principal></Principals><Settings><MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy><DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries><StopIfGoingOnBatteries>false</StopIfGoingOnBatteries><StartWhenAvailable>true</StartWhenAvailable><RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable><Enabled>true</Enabled><Hidden>false</Hidden><RunOnlyIfIdle>false</RunOnlyIfIdle><WakeToRun>false</WakeToRun><ExecutionTimeLimit>PT5M</ExecutionTimeLimit><Priority>7</Priority></Settings><Actions Context=""Author""><Exec><Command>C:\Users\gadari.saidulu\AppData\Local\Programs\PythonEmbed312\python.exe</Command><Arguments>C:\Users\gadari.saidulu\Projects\sftp-alert-reporter\sftp_report.py</Arguments><WorkingDirectory>C:\Users\gadari.saidulu\Projects\sftp-alert-reporter</WorkingDirectory></Exec></Actions></Task>'@; ^
+  $xml | Out-File -FilePath '%XMLFILE%' -Encoding Unicode; ^
   Unregister-ScheduledTask -TaskName 'SFTP Alert Reporter' -Confirm:$false -ErrorAction SilentlyContinue; ^
-  Register-ScheduledTask -TaskName 'SFTP Alert Reporter' -Action $action -Trigger @($t1,$t2) -Settings $settings -Force; ^
-  Write-Host 'Task registered: daily 1pm + at every logon.' ^
+  Register-ScheduledTask -TaskName 'SFTP Alert Reporter' -Xml (Get-Content '%XMLFILE%' -Raw) -Force; ^
+  Write-Host 'Task registered: 1pm daily, repeats every 10min until 11pm, runs on battery, StartWhenAvailable.' ^
 "
 
 echo.
-echo Triggers registered:
-echo   1. Daily at 1:00 PM IST
-echo   2. At every Windows logon (catches up missed 1pm runs)
-echo.
-echo The script automatically skips if before 1pm or already sent today.
+echo Task "SFTP Alert Reporter" registered successfully.
+echo Fires at 1:00 PM IST, then every 10 minutes until 11:00 PM.
+echo If laptop is off at 1pm, runs within 10 min of switching on.
+echo Script auto-skips if before 1pm or report already sent today.
 pause
