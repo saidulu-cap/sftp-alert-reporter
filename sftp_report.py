@@ -66,20 +66,6 @@ JOBS: list[JobDef] = [
 # Gmail authentication
 # ---------------------------------------------------------------------------
 
-def disable_windows_task() -> None:
-    """Disable the Windows scheduled task so it stops repeating today."""
-    import subprocess, sys
-    if sys.platform != "win32":
-        return
-    r = subprocess.run(
-        ["schtasks", "/change", "/tn", "SFTP Alert Reporter", "/DISABLE"],
-        capture_output=True, text=True
-    )
-    if r.returncode == 0:
-        print("Windows task disabled until tomorrow (re-enabled at 12:55 PM).")
-    else:
-        print(f"Note: could not disable task: {r.stderr.strip()}")
-
 
 def already_ran_today(service) -> bool:
     """Return True if a report email was already sent today (checks Sent folder)."""
@@ -540,7 +526,6 @@ def main():
     if already_ran_today(service):
         print(f"[{now_ist.strftime('%Y-%m-%d %H:%M IST')}] "
               f"Report already sent today — skipping to avoid duplicate.")
-        disable_windows_task()
         return
 
     results: list[JobResult] = []
@@ -575,8 +560,6 @@ def main():
         print("Google Chat posted.")
     else:
         print("GOOGLE_CHAT_WEBHOOK_URL not set — skipping Chat post.")
-
-    disable_windows_task()
 
     print("\nDone.")
 
